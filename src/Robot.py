@@ -33,9 +33,14 @@ class Robot(pygame.sprite.Sprite):
         screen.blit(self.rotated, self.rect)
 
     def move(self, keys=None):
-        if keys == None:
+        """
+        User input move method
+        Args:
+            keys (): key events passed by pygame
+        """
+        if keys is None:
             return
-        
+
         if keys[pygame.K_w]:
             self.adjustVl(0.0001)
         if keys[pygame.K_s]:
@@ -55,6 +60,11 @@ class Robot(pygame.sprite.Sprite):
             self.vr = -self.m2p
 
     def update(self, dt):
+        """
+        Update function
+        Args:
+            dt (int): miliseconds since last frame 
+        """
         self.x += ((self.vl+self.vr)/2) * math.cos(self.theta) * dt
         self.y -= ((self.vl+self.vr)/2) * math.sin(self.theta) * dt
         self.theta += (self.vr-self.vl)/self.w * dt
@@ -64,5 +74,9 @@ class Robot(pygame.sprite.Sprite):
         if self.theta < -2 * math.pi:
             self.theta = self.theta + 2 * math.pi
 
-        self.rotated = pygame.transform.rotozoom(self.image, math.degrees(self.theta), 1)
-        self.rect = self.rotated.get_rect(center = (self.x, self.y))
+        # Properly rotate robot image
+        self.rotated = pygame.transform.rotozoom(
+            self.image, math.degrees(self.theta), 1)
+
+        # Set collision rectangle
+        self.rect = self.rotated.get_rect(center=(self.x, self.y))

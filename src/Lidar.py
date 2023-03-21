@@ -2,7 +2,7 @@ import pygame
 import math
 
 # How many units to jump per laserbeam iteration
-DELTA_SCALE = 10 
+DELTA_SCALE = 5
 
 
 class Lidar(pygame.sprite.Sprite):
@@ -14,13 +14,13 @@ class Lidar(pygame.sprite.Sprite):
 
         self.startAngle = startAngle
         self.endAngle = endAngle
-        self.increment = increment
+        self.increment = math.radians(increment)
         self.max_range = max_range
 
         self.walls = walls
 
         lidarRange = self.endAngle - self.startAngle
-        count = int(math.degrees(lidarRange) / self.increment) + 1
+        count = int(lidarRange / self.increment) + 1
 
         self.readings = [0] * count
         self.lasers = pygame.sprite.Group()
@@ -39,40 +39,60 @@ class Lidar(pygame.sprite.Sprite):
     #     return self.readings
 
     def laserScan(self):
-        currentAngle = math.degrees(self.startAngle)
-        
+        """
+        Does a single sweep of laser beams across surroundings from left to
+        right of robot with the current lidar settings.
+
+        Returns:
+            List containing laser scan distances.
+        """
+        currentAngle = self.endAngle
+
         open = []
         for laser in self.lasers:
             deltas = (math.cos(currentAngle) * DELTA_SCALE,
                       math.sin(currentAngle) * DELTA_SCALE,
                       1 * DELTA_SCALE)
-            laser.distance = 0
-            laser.deltas = deltas
 
+            laser.reinit((self.x, self.y), deltas)
             open.append(laser)
 
             currentAngle += self.increment
 
         while open:
-            closed = []
             for laser in open:
-                print(laser.deltas, laser.x, laser.y, laser.distance)
                 laser.cast()
                 if laser.distance > self.max_range:
-                    closed.append(laser)
                     open.remove(laser)
 
             collided = pygame.sprite.groupcollide(
                 self.lasers, self.walls, False, False).keys()
 
+            collided = [laser for laser in collided if laser in open]
+
             for laser in collided:
                 open.remove(laser)
+        
+        return self.getDistances()
+
+    def getDistances(self):
+        """
+        Read distances from lasers
+
+        Returns:
+            List filled with distances going from left of robot to right
+        """
+        ret = []
+        for laser in self.lasers:
+            ret.append(laser.distance)
+
+        return ret
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
         for laser in self.lasers:
             laser.draw(screen, self.color)
-
+#
     def update(self, pos, theta):
         self.x, self.y = pos
         self.rect = pygame.Rect(self.x - 5, self.y - 5, 10, 10)
@@ -112,6 +132,11 @@ class Laserbeam(pygame.sprite.Sprite):
     #     self.rect = pygame.Rect(self.x - 3, self.y - 3, 6, 6)
     #
     #     return distance
+
+    def reinit(self, pos, deltas):
+        self.distance = 0
+        self.x, self.y = pos
+        self.deltas = deltas
 
     def cast(self):
         self.updatePos()

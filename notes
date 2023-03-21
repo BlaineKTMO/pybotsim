@@ -25,3 +25,20 @@ To Do:
     Documentation
     Try numpy arrays to get C to do the number crunching
     Resize wall dimensions to lower load and find texture.
+
+=== 3/21/23 ===
+Problems:
+    Really weird bugs with math. I need to go back through and double check all
+    the math.
+
+    Felt the pain of some poor design choices in the beginning. Need to refactor
+    code soon.
+
+Good stuff:
+    Improved performance with lidar considerably. Changed approach from
+    simulating individual beams to simulating radial expansion, and checking for
+    collisions. This allows us to simultaneously check multiple beams rather
+    than iterating through all of them.
+
+To Do:
+    Refactor

@@ -91,12 +91,10 @@ def main():
     print("Hello world")
     pygame.init()
 
-    walls = createMap(map)
-
     clock = pygame.time.Clock()
-    dt = clock.tick(60)
+    dt = clock.tick(30)
     # lastTime = pygame.time.get_ticks()
-    
+
     current_path = os.path.dirname(__file__)
     image_path = os.path.join(current_path, 'images')
     robot_img = os.path.join(image_path, 'robot.png')
@@ -110,13 +108,17 @@ def main():
     robotInfoRectVr = robotInfoVr.get_rect()
     robotInfoRectTheta = robotInfoTheta.get_rect()
 
-    robotInfoRectVl.center=(DIMENSIONS[0] - 400, DIMENSIONS[1] - 200)
-    robotInfoRectVr.center=(DIMENSIONS[0] - 400, DIMENSIONS[1] - 150)
-    robotInfoRectTheta.center=(DIMENSIONS[0] - 400, DIMENSIONS[1] - 100)
+    robotInfoRectVl.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 200)
+    robotInfoRectVr.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 150)
+    robotInfoRectTheta.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 100)
 
     world = World(DIMENSIONS) 
+    world.screen.fill(WHITE)
+    walls = createMap(map)
+    walls.draw(world.screen)
+
     robot = Robot(ROBOT_DIM, robot_img, 0.01)
-    lidar = Lidar((robot.x, robot.y), 0, math.pi, 2, GREEN)
+    lidar = Lidar((robot.x, robot.y), 0, math.pi, 2, 300, walls, GREEN)
 
     lidar_rate = 20;
     rate_counter = 0;
@@ -145,16 +147,16 @@ def main():
         robot.update(dt)
         if rate_counter == 19:
             lidar.update((robot.x, robot.y), robot.theta)
-            lidar.laserScan(walls)
+            lidar.laserScan()
         # lidar.update((robot.x, robot.y))
         # lidar.laserScan(walls)
 
         world.screen.fill(WHITE)
+        walls.draw(world.screen)
         world.screen.blit(robotInfoVl, robotInfoRectVl)
         world.screen.blit(robotInfoVr, robotInfoRectVr)
         world.screen.blit(robotInfoTheta, robotInfoRectTheta)
 
-        walls.draw(world.screen)
         world.draw_trail(robot.getPos(), YELLOW)
         robot.draw(world.screen)
         lidar.draw(world.screen)

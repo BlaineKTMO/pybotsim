@@ -93,8 +93,9 @@ def main():
 
     walls = createMap(map)
 
-    dt = 0
-    lastTime = pygame.time.get_ticks()
+    clock = pygame.time.Clock()
+    dt = clock.tick(60)
+    # lastTime = pygame.time.get_ticks()
     
     current_path = os.path.dirname(__file__)
     image_path = os.path.join(current_path, 'images')
@@ -127,8 +128,10 @@ def main():
                 running = False
             
         robot.move(pygame.key.get_pressed())
-        dt = (pygame.time.get_ticks() - lastTime)/1000
-        lastTime = pygame.time.get_ticks()
+        
+        # dt = (pygame.time.get_ticks() - lastTime)/1000
+        # lastTime = pygame.time.get_ticks()
+        dt = clock.tick(15)/1000
         
         info_vl = f"Vl = {robot.vl/robot.m2p:.3f}m/s"
         info_vr = f"Vr = {robot.vr/robot.m2p:.3f}m/s"

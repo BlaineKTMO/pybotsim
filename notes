@@ -1,0 +1,27 @@
+Project: PyBotSim
+Author: Blaine Oania
+Description:
+    Python differential drive robot simulator with an included LiDAR. Features
+    to scale movement and adjustable parameters.
+
+=== 3/20/23 ===
+Problems:
+    Anaconda initialized python to 2.7. Spent 30-60min trying to debug pygame
+    images.
+
+    Issues with getting a set fps, and timing the game loop. Currently doing a 
+    hack where lidar laserscan only happens every 20 loops.
+    ^^^ Maybe try splitting up lidar scan across all 20 loops
+    
+    Issues with LiDAR computations taking too long. Already replaced square and
+    square root with incremental addition - some benefit
+    
+Good stuff:
+    Was really easy to get started and progress was made quickly. Was able to 
+    add driving robot, path, lidar attachment, laserscan functionality, and
+    some wall functionality.
+
+To Do:
+    Documentation
+    Try numpy arrays to get C to do the number crunching
+    Resize wall dimensions to lower load and find texture.

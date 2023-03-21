@@ -46,12 +46,12 @@ class Laserbeam(pygame.sprite.Sprite):
         self.rect = pygame.Rect(self.x - 3, self.y - 3, 6, 6)
         
     def cast(self, start, dir, walls):
-        dx = math.cos(dir)
-        dy = math.sin(dir)
-        
+        dx = math.cos(dir) * 10
+        dy = math.sin(dir) * 10
+
+        dd = (((dx)**2 + (dy)**2)**0.5)
         self.startx, self.starty = start
 
-        steps = 0
         distance = 0
         hit = False
 
@@ -60,14 +60,14 @@ class Laserbeam(pygame.sprite.Sprite):
             self.y -= dy
             self.rect = pygame.Rect(self.x - 3, self.y - 3, 6, 6)
 
-            distance = (((self.x-self.startx)**2 + (self.y - self.starty)**2)**0.5)
+            distance += dd
 
             if pygame.sprite.spritecollideany(self, walls):
                 hit = True
-        
+
         self.rect = pygame.Rect(self.x - 3, self.y - 3, 6, 6)
 
         return distance
 
-    def draw(self, screen, color=(0,0,0)):
+    def draw(self, screen, color=(0, 0, 0)):
         pygame.draw.rect(screen, color, self.rect)

@@ -41,4 +41,20 @@ Good stuff:
     than iterating through all of them.
 
 To Do:
+    Lidar temporal refactoring
     Refactor
+
+=== 3/22/23 ===
+Problems:
+    Lidar is a little inaccurate because particles move slowly when compared to
+    real life. May not be fixable, since to increase speed, dx and dy have to
+    change, which decreases resolution. Increasing framerate somewhat alleviates
+    this issue.
+    
+Good stuff:
+    Lidar temporal refactoring went really quickly and efficiently.
+
+To Do:
+    Refactor wall creation by displaying as big of rectangles as possible.
+
+    Add more documentation.

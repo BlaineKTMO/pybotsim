@@ -2,6 +2,18 @@ import pygame
 import math
 
 class Robot(pygame.sprite.Sprite):
+    """
+
+    Attributes: 
+        m2p: meter to pixels conversion
+        theta: current angle robot is facing
+        w: width of robot in pixels.
+        vl: left wheel velocity
+        vr: right wheel velocity
+        image: robot sprite
+        rotated: rotated robot sprite
+        rect: rect object pygame uses for collision detection
+    """
     def __init__(self, startPos, img, diameter):
         super().__init__()
         self.m2p = 10512
@@ -71,7 +83,7 @@ class Robot(pygame.sprite.Sprite):
 
         if self.theta > 2 * math.pi:
             self.theta = self.theta - 2 * math.pi
-        if self.theta < -2 * math.pi:
+        if self.theta < 0:
             self.theta = self.theta + 2 * math.pi
 
         # Properly rotate robot image

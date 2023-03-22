@@ -9,6 +9,7 @@ from src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
 ROBOT_DIM = [800, 900]
+FRAMERATE = 200
 
 map = """
 ................................................................................
@@ -62,6 +63,7 @@ map = """
 #.....................................#............#............................
 """
 
+
 def createMap(map):
     x_loc = 0
     y_loc = 0
@@ -72,10 +74,8 @@ def createMap(map):
         if char == "\n":
             continue
         grid.append(char)
-        
-        
 
-    for idx, char in enumerate(grid): 
+    for idx, char in enumerate(grid):
         if idx != 0 and idx % 80 == 0:
             x_loc = 0
             y_loc += 20
@@ -85,6 +85,7 @@ def createMap(map):
             Wall((x_loc, y_loc), GREEN, walls)
 
     return walls
+
 
 def main():
     print("Hello world")
@@ -108,34 +109,37 @@ def main():
     robotInfoRectVr = robotInfoVr.get_rect()
     robotInfoRectTheta = robotInfoTheta.get_rect()
 
-    # Move robot info rectangles to correct position  
+    # Move robot info rectangles to correct position
     robotInfoRectVl.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 200)
     robotInfoRectVr.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 150)
     robotInfoRectTheta.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 100)
 
-    world = World(DIMENSIONS) 
+    world = World(DIMENSIONS)
     world.screen.fill(WHITE)
     walls = createMap(map)
     walls.draw(world.screen)
 
     robot = Robot(ROBOT_DIM, robot_img, 0.01)
-    lidar = Lidar((robot.x, robot.y), 0, math.pi, 2, 300, walls, GREEN)
+    lidar = Lidar((robot.x, robot.y), 0, math.pi, 10, 300, walls, GREEN)
 
-    lidar_rate = 20;
-    rate_counter = 0;
+    # lidar_rate = 20
+    # rate_counter = 0
 
+    # MAIN SIM LOOP #
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            
+
         robot.move(pygame.key.get_pressed())
-        
+
+        # Old time keeping system #
         # dt = (pygame.time.get_ticks() - lastTime)/1000
         # lastTime = pygame.time.get_ticks()
-        dt = clock.tick(60)/1000
-        
+
+        dt = clock.tick(FRAMERATE)/1000
+
         info_vl = f"Vl = {robot.vl/robot.m2p:.3f}m/s"
         info_vr = f"Vr = {robot.vr/robot.m2p:.3f}m/s"
         info_theta = f"theta = {math.degrees(robot.theta):.3f} degrees"
@@ -144,30 +148,31 @@ def main():
         robotInfoVr = font.render(info_vr, True, BLACK, WHITE)
         robotInfoTheta = font.render(info_theta, True, BLACK, WHITE)
 
+        # Deprecated lidar rate #
+        # if rate_counter == 19:
+        #     lidar.update((robot.x, robot.y), robot.theta)
+        #     s = lidar.laserScan()
+        #     print(s)
 
+        # Update calls #
         robot.update(dt)
-        if rate_counter == 19:
-            lidar.update((robot.x, robot.y), robot.theta)
-            s = lidar.laserScan()
-            print(s)
+        lidar.update((robot.x, robot.y), robot.theta)
 
-        # lidar.update((robot.x, robot.y), robot.theta)
-        # lidar.laserScan()
-
+        # Draw new screen and add robot info
         world.screen.fill(WHITE)
-        walls.draw(world.screen)
         world.screen.blit(robotInfoVl, robotInfoRectVl)
         world.screen.blit(robotInfoVr, robotInfoRectVr)
         world.screen.blit(robotInfoTheta, robotInfoRectTheta)
 
+        # Draw robot, walls, trail, and LiDAR #
         world.draw_trail(robot.getPos(), YELLOW)
+        walls.draw(world.screen)
         robot.draw(world.screen)
         lidar.draw(world.screen)
 
-        pygame.draw.line(world.screen, YELLOW, (1000, 500), (1200, 500))
         pygame.display.update()
 
-        rate_counter += 1
-        if rate_counter > lidar_rate:
-            rate_counter = 0
-
+        # Deprecated Lidar rate
+        # rate_counter += 1
+        # if rate_counter > lidar_rate:
+        #     rate_counter = 0

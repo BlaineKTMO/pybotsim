@@ -3,11 +3,11 @@ import os
 import math
 import torch
 
-from src.Lidar import Lidar
-from src.World import World
-from src.Robot import Robot
-from src.Wall import Wall
-from src.val.Colors import *
+from PyBotSim.src.Lidar import Lidar
+from PyBotSim.src.World import World
+from PyBotSim.src.Robot import Robot
+from PyBotSim.src.Wall import Wall
+from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
 ROBOT_DIM = [800, 900]
@@ -67,6 +67,8 @@ map = """
 
 class Simulator:
     def __init__(self):
+        pygame.init()
+
         self.clock = pygame.time.Clock()
         self.dt = self.clock.tick(FRAMERATE)
 
@@ -179,6 +181,8 @@ class Simulator:
         self.lidar.draw(self.world.screen)
 
         pygame.display.update()
+
+        return self.lidar.laserscan
         
  
 def createMap(map):

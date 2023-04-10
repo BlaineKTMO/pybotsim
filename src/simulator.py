@@ -10,7 +10,7 @@ from PyBotSim.src.Wall import Wall
 from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
-ROBOT_DIM = [800, 900]
+ROBOT_START = [800, 900]
 FRAMERATE = 200
 
 map = """
@@ -96,73 +96,16 @@ class Simulator:
         self.walls = createMap(map)
         self.walls.draw(self.world.screen)
 
-        self.robot = Robot(ROBOT_DIM, robot_img, 0.01)
-        self.lidar = Lidar((self.robot.x, self.robot.y), 0, math.pi, 10, 300, self.walls, GREEN)
+        self.robot = Robot(ROBOT_START, robot_img, 0.01)
+        self.lidar = Lidar((self.robot.x, self.robot.y), 0, math.pi, 1, 300, self.walls, GREEN)
 
     def set_dt(self):
         self.dt = self.clock.tick(FRAMERATE)/1000
 
-    def updateRobotInfo(self):
-        info_vl = f"Vl = {self.robot.vl:.3f}m/s"
-        info_vr = f"Vr = {self.robot.vr/self.robot.m2p:.3f}m/s"
-        info_theta = f"theta = {math.degrees(self.robot.theta):.3f} degrees"
+    def reset(self):
+        self.robot.x, self.robot.y = ROBOT_START
 
-        self.robotInfoVl = self.font.render(info_vl, True, BLACK, WHITE)
-        self.robotInfoVr = self.font.render(info_vr, True, BLACK, WHITE)
-        self.robotInfoTheta = self.font.render(info_theta, True, BLACK, WHITE)
-
-    def controllableSim(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-            self.robot.move(pygame.key.get_pressed())
-
-            self.set_dt()
-
-            # Deprecated lidar rate #
-            # if rate_counter == 19:
-            #     lidar.update((robot.x, robot.y), robot.theta)
-            #     s = lidar.laserScan()
-            #     print(s)
-
-            # Update calls #
-            self.robot.update(self.dt)
-            self.lidar.update((self.robot.x, self.robot.y), self.robot.theta)
-            self.updateRobotInfo()
-
-            # Draw new screen and add robot info
-            self.world.screen.fill(WHITE)
-            self.world.screen.blit(self.robotInfoVl, self.robotInfoRectVl)
-            self.world.screen.blit(self.robotInfoVr, self.robotInfoRectVr)
-            self.world.screen.blit(self.robotInfoTheta, self.robotInfoRectTheta)
-
-            # Draw robot, walls, trail, and LiDAR #
-            self.world.draw_trail(self.robot.getPos(), YELLOW)
-            self.walls.draw(self.world.screen)
-            self.robot.draw(self.world.screen)
-            self.lidar.draw(self.world.screen)
-
-            pygame.display.update()
-
-    def forward(self, action=None):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-
-        if action:
-            self.robot.applyAcceleration(action)
-
-        self.set_dt()
-
-        # Deprecated lidar rate #
-        # if rate_counter == 19:
-        #     lidar.update((robot.x, robot.y), robot.theta)
-        #     s = lidar.laserScan()
-        #     print(s)
-
+    def update(self):
         # Update calls #
         self.robot.update(self.dt)
         self.lidar.update((self.robot.x, self.robot.y), self.robot.theta)
@@ -182,9 +125,42 @@ class Simulator:
 
         pygame.display.update()
 
-        return self.lidar.laserscan
-        
- 
+    def updateRobotInfo(self):
+        info_vl = f"Vl = {self.robot.vl:.3f}m/s"
+        info_vr = f"Vr = {self.robot.vr/self.robot.m2p:.3f}m/s"
+        info_theta = f"theta = {math.degrees(self.robot.theta):.3f} degrees"
+
+        self.robotInfoVl = self.font.render(info_vl, True, BLACK, WHITE)
+        self.robotInfoVr = self.font.render(info_vr, True, BLACK, WHITE)
+        self.robotInfoTheta = self.font.render(info_theta, True, BLACK, WHITE)
+
+    def controllableSim(self):
+        _, running = self.forward()
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            self.robot.move(pygame.key.get_pressed())
+
+            self.set_dt()
+            self.update()
+
+    def step(self, action=None):
+        running = True
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        if action:
+            self.robot.applyAcceleration(action)
+
+        self.set_dt()
+        self.update()
+
+        return (self.lidar.laserscan, running)
+
+
 def createMap(map):
     x_loc = 0
     y_loc = 0
@@ -242,7 +218,7 @@ def main():
     # walls = createMap(map)
     # walls.draw(world.screen)
     #
-    # robot = Robot(ROBOT_DIM, robot_img, 0.01)
+    # robot = Robot(ROBOT_START, robot_img, 0.01)
     # lidar = Lidar((robot.x, robot.y), 0, math.pi, 10, 300, walls, GREEN)
     #
     # # lidar_rate = 20

@@ -71,6 +71,10 @@ class Robot(pygame.sprite.Sprite):
         if (self.vr < -self.m2p):
             self.vr = -self.m2p
 
+    def applyAcceleration(self, accel):
+        self.vl += accel[0]
+        self.vr += accel[1]
+
     def update(self, dt):
         """
         Update function

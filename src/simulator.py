@@ -2,6 +2,7 @@ import pygame
 import os
 import math
 import torch
+import numpy as np
 
 from PyBotSim.src.Lidar import Lidar
 from PyBotSim.src.World import World
@@ -10,7 +11,8 @@ from PyBotSim.src.Wall import Wall
 from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
-ROBOT_START = [800, 900]
+ROBOT_START = [850, 900]
+GOAL = [850, 900]
 FRAMERATE = 200
 
 map = """
@@ -41,19 +43,19 @@ map = """
 .....................................#............#.............................
 .....................................#............#.............................
 #....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
 .....................................#............#.............................
 .....................................#............#.............................
 .....................................#............#.............................
@@ -99,11 +101,36 @@ class Simulator:
         self.robot = Robot(ROBOT_START, robot_img, 0.01)
         self.lidar = Lidar((self.robot.x, self.robot.y), 0, math.pi, 1, 300, self.walls, GREEN)
 
+        self.goal = GOAL
+        self.max_dist = 10000
+
+    def headingToGoal(self):
+        heading_vec = [np.cos(self.robot.theta), np.sin(self.robot.theta)]
+        goal_vec = [self.goal[0] - self.robot.x, self.goal[1] - self.robot.y]
+
+        mag_heading = math.sqrt(sum(pow(element, 2) for element in heading_vec))
+        mag_goal = math.sqrt(sum(pow(element, 2) for element in goal_vec)) 
+
+        heading_vec[0] /= mag_heading + 0.000000000001
+        heading_vec[1] /= mag_heading + 0.000000000001  
+
+        goal_vec[0] /= mag_goal + 0.0000000001
+        goal_vec[1] /= mag_goal + 0.0000000001
+
+        dot = np.dot(heading_vec, goal_vec)
+        return np.arccos(dot)
+
+    def distToGoal(self):
+        return math.sqrt(pow(self.goal[0] - self.robot.x, 2) + pow(self.goal[1] - self.robot.y, 2))
+
     def set_dt(self):
         self.dt = self.clock.tick(FRAMERATE)/1000
 
     def reset(self):
         self.robot.x, self.robot.y = ROBOT_START
+        self.robot.theta = math.pi/2
+        self.robot.vl = 0
+        self.robot.vr = 0
 
     def update(self):
         # Update calls #
@@ -152,13 +179,23 @@ class Simulator:
             if event.type == pygame.QUIT:
                 running = False
 
-        if action:
+        if action is not None:
             self.robot.applyAcceleration(action)
+
+        collided = pygame.sprite.spritecollideany(self.robot, self.walls)
+        if collided:
+            running = False
 
         self.set_dt()
         self.update()
 
-        return (self.lidar.laserscan, running)
+        laserscans = np.array(self.lidar.laserscan)
+        laserscans = np.divide(laserscans, self.lidar.max_range + self.lidar.increment)
+
+        dist = self.distToGoal()
+        if abs(dist) > self.max_dist:
+            self.max_dist = dist
+        return (laserscans.tolist(), self.headingToGoal()/math.pi, -abs(dist/self.max_dist), self.robot.vl/self.robot.maxV, self.robot.vr/self.robot.maxV, running)
 
 
 def createMap(map):

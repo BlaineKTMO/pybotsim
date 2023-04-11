@@ -20,6 +20,7 @@ class Robot(pygame.sprite.Sprite):
         self.x, self.y = startPos
         self.theta = math.pi/2
         self.w = diameter * self.m2p
+        self.maxV = 30
 
         self.vl = 0.00
         self.vr = 0.00
@@ -62,18 +63,26 @@ class Robot(pygame.sprite.Sprite):
         if keys[pygame.K_d]:
             self.adjustVr(-0.0001)
 
-        if (self.vl > self.m2p):
-            self.vl = self.m2p
-        if (self.vl < -self.m2p):
-            self.vl = -self.m2p
-        if (self.vr > self.m2p):
-            self.vr = self.m2p
-        if (self.vr < -self.m2p):
-            self.vr = -self.m2p
+        if (self.vl > self.maxV):
+            self.vl = self.maxV
+        if (self.vl < -self.maxV):
+            self.vl = -self.maxV
+        if (self.vr > self.maxV):
+            self.vr = self.maxV
+        if (self.vr < -self.maxV):
+            self.vr = -self.maxV
 
     def applyAcceleration(self, accel):
         self.vl += accel[0]
         self.vr += accel[1]
+        if (self.vl > self.maxV):
+            self.vl = self.maxV
+        if (self.vl < -self.maxV):
+            self.vl = -self.maxV
+        if (self.vr > self.maxV):
+            self.vr = self.maxV
+        if (self.vr < -self.maxV):
+            self.vr = -self.maxV
 
     def update(self, dt):
         """

@@ -145,7 +145,7 @@ class Simulator:
 
             pygame.display.update()
 
-    def forward(self, action=None):
+    def forward(self, action=None, draw=True):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
@@ -173,12 +173,13 @@ class Simulator:
         self.world.screen.blit(self.robotInfoTheta, self.robotInfoRectTheta)
 
         # Draw robot, walls, trail, and LiDAR #
-        self.world.draw_trail(self.robot.getPos(), YELLOW)
-        self.walls.draw(self.world.screen)
-        self.robot.draw(self.world.screen)
-        self.lidar.draw(self.world.screen)
+        if draw:
+            self.world.draw_trail(self.robot.getPos(), YELLOW)
+            self.walls.draw(self.world.screen)
+            self.robot.draw(self.world.screen)
+            self.lidar.draw(self.world.screen)
 
-        pygame.display.update()
+            pygame.display.update()
         
  
 def createMap(map):
@@ -208,7 +209,9 @@ def main():
     pygame.init()
 
     sim = Simulator()
-    sim.controllableSim()
+    # sim.controllableSim()
+    while True:
+        sim.forward(draw=False)
 
     # clock = pygame.time.Clock()
     # dt = clock.tick(30)

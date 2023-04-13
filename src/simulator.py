@@ -89,9 +89,12 @@ class Simulator:
         self.robotInfoRectTheta = self.robotInfoTheta.get_rect()
 
         # Move robot info rectangles to correct position
-        self.robotInfoRectVl.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 200)
-        self.robotInfoRectVr.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 150)
-        self.robotInfoRectTheta.center = (DIMENSIONS[0] - 400, DIMENSIONS[1] - 100)
+        self.robotInfoRectVl.center = (DIMENSIONS[0] - 400,
+                                       DIMENSIONS[1] - 200)
+        self.robotInfoRectVr.center = (DIMENSIONS[0] - 400,
+                                       DIMENSIONS[1] - 150)
+        self.robotInfoRectTheta.center = (DIMENSIONS[0] - 400,
+                                          DIMENSIONS[1] - 100)
 
         self.world = World(DIMENSIONS)
         self.world.screen.fill(WHITE)
@@ -99,7 +102,8 @@ class Simulator:
         self.walls.draw(self.world.screen)
 
         self.robot = Robot(ROBOT_START, robot_img, 0.01)
-        self.lidar = Lidar((self.robot.x, self.robot.y), 0, math.pi, 1, 300, self.walls, GREEN)
+        self.lidar = Lidar((self.robot.x, self.robot.y),
+                           0, math.pi, 1, 300, self.walls, GREEN)
 
         self.goal = GOAL
         self.max_dist = 0.000001
@@ -108,11 +112,12 @@ class Simulator:
         heading_vec = [np.cos(self.robot.theta), np.sin(self.robot.theta)]
         goal_vec = [self.goal[0] - self.robot.x, self.goal[1] - self.robot.y]
 
-        mag_heading = math.sqrt(sum(pow(element, 2) for element in heading_vec))
-        mag_goal = math.sqrt(sum(pow(element, 2) for element in goal_vec)) 
+        mag_heading = math.sqrt(
+            sum(pow(element, 2) for element in heading_vec))
+        mag_goal = math.sqrt(sum(pow(element, 2) for element in goal_vec))
 
         heading_vec[0] /= mag_heading + 0.000000000001
-        heading_vec[1] /= mag_heading + 0.000000000001  
+        heading_vec[1] /= mag_heading + 0.000000000001
 
         goal_vec[0] /= mag_goal + 0.0000000001
         goal_vec[1] /= mag_goal + 0.0000000001
@@ -121,7 +126,9 @@ class Simulator:
         return np.arccos(dot)
 
     def distToGoal(self):
-        return math.sqrt(pow(self.goal[0] - self.robot.x, 2) + pow(self.goal[1] - self.robot.y, 2))
+        return math.sqrt(
+            pow(self.goal[0] - self.robot.x, 2)
+            + pow(self.goal[1] - self.robot.y, 2))
 
     def set_dt(self):
         self.dt = self.clock.tick(FRAMERATE)/1000
@@ -144,6 +151,7 @@ class Simulator:
         self.world.screen.blit(self.robotInfoVr, self.robotInfoRectVr)
         self.world.screen.blit(self.robotInfoTheta, self.robotInfoRectTheta)
 
+    def draw():
         # Draw robot, walls, trail, and LiDAR #
         self.world.draw_trail(self.robot.getPos(), YELLOW)
         self.walls.draw(self.world.screen)
@@ -173,7 +181,7 @@ class Simulator:
             self.set_dt()
             self.update()
 
-    def step(self, action=None):
+    def step(self, action=None, draw=True):
         running = True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -188,14 +196,20 @@ class Simulator:
 
         self.set_dt()
         self.update()
+        if draw:
+            self.draw()
 
         laserscans = np.array(self.lidar.laserscan)
-        laserscans = np.divide(laserscans, self.lidar.max_range + self.lidar.delta_scale)
+        laserscans = np.divide(laserscans,
+                               self.lidar.max_range + self.lidar.delta_scale)
 
         dist = self.distToGoal()
         if abs(dist) > self.max_dist:
             self.max_dist = dist
-        return (laserscans.tolist(), self.headingToGoal()/math.pi, -abs(dist/self.max_dist), self.robot.vl/self.robot.maxV, self.robot.vr/self.robot.maxV, running)
+        return (laserscans.tolist(), self.headingToGoal()/math.pi,
+                -abs(dist/self.max_dist),
+                self.robot.vl/self.robot.maxV, self.robot.vr/self.robot.maxV,
+                running)
 
 
 def createMap(map):
@@ -225,7 +239,9 @@ def main():
     pygame.init()
 
     sim = Simulator()
-    sim.controllableSim()
+    # sim.controllableSim()
+    while True:
+        sim.forward(draw=False)
 
     # clock = pygame.time.Clock()
     # dt = clock.tick(30)

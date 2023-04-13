@@ -12,7 +12,7 @@ from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
 ROBOT_START = [850, 900]
-GOAL = [850, 900]
+GOAL = [400, 500]
 FRAMERATE = 200
 
 map = """
@@ -102,7 +102,7 @@ class Simulator:
         self.lidar = Lidar((self.robot.x, self.robot.y), 0, math.pi, 1, 300, self.walls, GREEN)
 
         self.goal = GOAL
-        self.max_dist = 10000
+        self.max_dist = 0.000001
 
     def headingToGoal(self):
         heading_vec = [np.cos(self.robot.theta), np.sin(self.robot.theta)]
@@ -190,7 +190,7 @@ class Simulator:
         self.update()
 
         laserscans = np.array(self.lidar.laserscan)
-        laserscans = np.divide(laserscans, self.lidar.max_range + self.lidar.increment)
+        laserscans = np.divide(laserscans, self.lidar.max_range + self.lidar.delta_scale)
 
         dist = self.distToGoal()
         if abs(dist) > self.max_dist:

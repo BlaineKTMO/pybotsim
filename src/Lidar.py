@@ -33,6 +33,7 @@ class Lidar(pygame.sprite.Sprite):
         self.endAngle = endAngle
         self.increment = math.radians(increment)
         self.max_range = max_range
+        self.delta_scale = DELTA_SCALE
 
         lidarRange = self.endAngle - self.startAngle
         count = int(lidarRange / self.increment) + 1
@@ -97,9 +98,9 @@ class Lidar(pygame.sprite.Sprite):
         currentAngle = self.startAngle
 
         for laser in self.lasers:
-            deltas = (math.cos(currentAngle) * DELTA_SCALE,
-                      math.sin(currentAngle) * DELTA_SCALE,
-                      1 * DELTA_SCALE)
+            deltas = (math.cos(currentAngle) * self.delta_scale,
+                      math.sin(currentAngle) * self.delta_scale,
+                      1 * self.delta_scale)
 
             laser.reinit((self.x, self.y), deltas)
             self.open.add(laser)

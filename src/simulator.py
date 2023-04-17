@@ -12,7 +12,7 @@ from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
 ROBOT_START = [850, 900]
-GOAL = [400, 500]
+GOAL = [400, 900]
 FRAMERATE = 200
 
 map = """

@@ -56,15 +56,15 @@ map = """
 ..................................................#.............................
 ..................................................#.............................
 ..................................................#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-.....................................#............#.............................
-#....................................#............#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+..................................................#.............................
+#.................................................#.............................
 """
 
 class Simulator:
@@ -98,10 +98,10 @@ class Simulator:
 
         self.world = World(DIMENSIONS)
         self.world.screen.fill(WHITE)
-        self.walls = createMap(map)
+        self.walls = self.createMap(map)
         self.walls.draw(self.world.screen)
 
-        self.robot = Robot(ROBOT_START, robot_img, 0.01)
+        self.robot = Robot(ROBOT_START, robot_img, 0.005)
         self.lidar = Lidar((self.robot.x, self.robot.y),
                            0, math.pi, 1, 300, self.walls, GREEN)
 
@@ -138,6 +138,7 @@ class Simulator:
         self.robot.theta = math.pi/2
         self.robot.vl = 0
         self.robot.vr = 0
+        self.max_dist = 0
 
     def update(self):
         # Update calls #
@@ -151,7 +152,7 @@ class Simulator:
         self.world.screen.blit(self.robotInfoVr, self.robotInfoRectVr)
         self.world.screen.blit(self.robotInfoTheta, self.robotInfoRectTheta)
 
-    def draw():
+    def draw(self):
         # Draw robot, walls, trail, and LiDAR #
         self.world.draw_trail(self.robot.getPos(), YELLOW)
         self.walls.draw(self.world.screen)
@@ -180,6 +181,7 @@ class Simulator:
 
             self.set_dt()
             self.update()
+            self.draw()
 
     def step(self, action=None, draw=True):
         running = True
@@ -200,39 +202,40 @@ class Simulator:
             self.draw()
 
         laserscans = np.array(self.lidar.laserscan)
-        laserscans = np.divide(laserscans,
-                               self.lidar.max_range + self.lidar.delta_scale)
+        laserscans = laserscans/(self.lidar.max_range + self.lidar.delta_scale)
 
         dist = self.distToGoal()
         if abs(dist) > self.max_dist:
             self.max_dist = dist
-        return (laserscans.tolist(), self.headingToGoal()/math.pi,
-                -abs(dist/self.max_dist),
-                self.robot.vl/self.robot.maxV, self.robot.vr/self.robot.maxV,
-                running)
 
+        nnInputs = laserscans.tolist()
+        nnInputs.append(self.headingToGoal()/math.pi)
+        nnInputs.append(self.robot.vl/self.robot.maxV)
+        nnInputs.append(self.robot.vr/self.robot.maxV)
 
-def createMap(map):
-    x_loc = 0
-    y_loc = 0
-    walls = pygame.sprite.Group()
-    grid = []
+        return (nnInputs, -abs(dist/self.max_dist), running, collided)
 
-    for char in map:
-        if char == "\n":
-            continue
-        grid.append(char)
+    def createMap(self, map):
+        x_loc = 0
+        y_loc = 0
+        walls = pygame.sprite.Group()
+        grid = []
 
-    for idx, char in enumerate(grid):
-        if idx != 0 and idx % 80 == 0:
-            x_loc = 0
-            y_loc += 20
-        else:
-            x_loc += 20
-        if char == '#':
-            Wall((x_loc, y_loc), GREEN, walls)
+        for char in map:
+            if char == "\n":
+                continue
+            grid.append(char)
 
-    return walls
+        for idx, char in enumerate(grid):
+            if idx != 0 and idx % 80 == 0:
+                x_loc = 0
+                y_loc += 20
+            else:
+                x_loc += 20
+            if char == '#':
+                Wall((x_loc, y_loc), GREEN, walls)
+
+        return walls
 
 
 def main():

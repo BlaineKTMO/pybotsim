@@ -8,6 +8,7 @@ from PyBotSim.src.Lidar import Lidar
 from PyBotSim.src.World import World
 from PyBotSim.src.Robot import Robot
 from PyBotSim.src.Wall import Wall
+from PyBotSim.src.Goal import Goal
 from PyBotSim.src.val.Colors import *
 
 DIMENSIONS = [1600, 1000]
@@ -105,12 +106,12 @@ class Simulator:
         self.lidar = Lidar((self.robot.x, self.robot.y),
                            0, math.pi, 1, 300, self.walls, GREEN)
 
-        self.goal = GOAL
+        self.goal = Goal(GOAL, RED)
         self.max_dist = 0.000001
 
     def headingToGoal(self):
         heading_vec = [np.cos(self.robot.theta), np.sin(self.robot.theta)]
-        goal_vec = [self.goal[0] - self.robot.x, self.goal[1] - self.robot.y]
+        goal_vec = [self.goal.pos[0] - self.robot.x, self.goal.pos[1] - self.robot.y]
 
         mag_heading = math.sqrt(
             sum(pow(element, 2) for element in heading_vec))
@@ -127,8 +128,8 @@ class Simulator:
 
     def distToGoal(self):
         return math.sqrt(
-            pow(self.goal[0] - self.robot.x, 2)
-            + pow(self.goal[1] - self.robot.y, 2))
+            pow(self.goal.pos[0] - self.robot.x, 2)
+            + pow(self.goal.pos[1] - self.robot.y, 2))
 
     def set_dt(self):
         self.dt = self.clock.tick(FRAMERATE)/1000
@@ -158,6 +159,7 @@ class Simulator:
         self.walls.draw(self.world.screen)
         self.robot.draw(self.world.screen)
         self.lidar.draw(self.world.screen)
+        self.goal.draw(self.world.screen)
 
         pygame.display.update()
 

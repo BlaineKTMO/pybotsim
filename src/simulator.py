@@ -20,7 +20,7 @@ map = """
 ................................................................................
 ................................................................................
 ................................................................................
-#######################################....#####################################
+................................................................................
 #######################################....#####################################
 #######################################....#####################################
 #######################################....#####################################
@@ -108,6 +108,7 @@ class Simulator:
 
         self.goal = Goal(GOAL, RED)
         self.max_dist = 0.000001
+        self.prev_dist = self.distToGoal()
 
     def headingToGoal(self):
         heading_vec = [np.cos(self.robot.theta), np.sin(self.robot.theta)]
@@ -191,7 +192,10 @@ class Simulator:
             if event.type == pygame.QUIT:
                 running = False
 
+        # print(action)
+
         if action is not None:
+            action = [pos.item() for pos in action]
             self.robot.applyAcceleration(action)
 
         collided = pygame.sprite.spritecollideany(self.robot, self.walls)
@@ -215,7 +219,13 @@ class Simulator:
         nnInputs.append(self.robot.vl/self.robot.maxV)
         nnInputs.append(self.robot.vr/self.robot.maxV)
 
-        return (nnInputs, -abs(dist/self.max_dist), running, collided)
+        reward = 0
+        if dist - self.prev_dist < 0:
+            reward = 1
+        else:
+            reward = 0
+
+        return (nnInputs, reward, running, collided)
 
     def createMap(self, map):
         x_loc = 0
